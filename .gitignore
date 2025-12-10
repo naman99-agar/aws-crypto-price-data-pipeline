@@ -1,18 +1,52 @@
 # Python
-*.pyc
 __pycache__/
+*.pyc
 *.pyo
 *.pyd
+*.py[cod]
+*.log
+
+# Virtual Environment
 venv/
+ENV/
 env/
-*.sqlite3
+.venv/
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Mac system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# AWS credentials
+.aws/credentials
+.aws/config
 
 # Logs
 *.log
+pipeline.log
+cron_debug.log
 
-# MacOS
-.DS_Store
+# Jupyter Notebook checkpoints (if any)
+.ipynb_checkpoints/
 
-# VS Code
-.vscode/
+# Python packaging
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+bin/
+var/
+*.manifest
+*.spec
 
+# Misc
+*.swp
+*~
