@@ -17,19 +17,21 @@ This project is an **automated data pipeline** that fetches cryptocurrency price
 
 ## 📂 Project Structure
 ```
-aws-crypto-price-data-pipeline/
+aws-data-pipeline/
 ├── backend
-│   ├── main.py # FastAPI app for crypto data API
-│   ├── dashboard.py # Dashboard to visualize CSV data
-│   ├── run_pipeline.sh # Bash script to automate pipeline
-│   ├── requirements.txt # All Python dependencies
-│   └── README.md # Backend-specific notes
-├── infrastructure
-│   └── notes.md # Optional architecture notes
+│   ├── dashboard.py
+│   ├── main.py
+│   ├── README.md
+│   ├── requirements.txt
+│   └── run_pipeline.sh
 ├── cron_jobs
-│   └── instructions.md # Instructions for cron setup
-├── README.md # Main project documentation
-└── .gitignore # Files/folders to ignore
+│   ├── cleaner.sh
+│   ├── scheduler.sh
+│   └── instructions.md
+├── infrastructure
+│   └── notes.md
+├── .gitignore
+└── README.md
 ```
 ---
 
@@ -104,4 +106,5 @@ Pipeline can run automatically every 5 minutes using cron:
 ## 🔗 Demo Screenshot
 
 <img width="1437" height="803" alt="Screenshot 2025-12-10 at 6 38 27 PM" src="https://github.com/user-attachments/assets/b5275a00-c720-48bc-bb0c-59ea294e692d" />
+
 
