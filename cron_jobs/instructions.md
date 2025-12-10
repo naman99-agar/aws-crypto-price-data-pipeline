@@ -28,11 +28,11 @@ This opens the user's cron table in an editor (usually vim or nano).
 ## 3. Add Cron Jobs
 ### 3.1 Run Pipeline Every 5 Minutes
 ```
-*/5 * * * * /Users/namanagarwalla/Documents/Projects/aws-data-pipeline/backend/run_pipeline.sh >> /Users/namanagarwalla/Documents/Projects/aws-data-pipeline/backend/pipeline.log 2>&1
+*/5 * * * * /Users/<your folder path>/Documents/Projects/aws-data-pipeline/backend/run_pipeline.sh >> /Users/<your folder path>/Documents/Projects/aws-data-pipeline/backend/pipeline.log 2>&1
 ```
 ### 3.2 Run Cleaner Script Every 2 Minutes
 ```
-*/2 * * * * /Users/namanagarwalla/cleaner_test/scheduler.sh
+*/2 * * * * /Users/<your folder path>/cleaner_test/scheduler.sh
 ```
 ## 4. Cron Timing Format
 ```
@@ -61,7 +61,7 @@ Cron does not know your virtual environment paths automatically.
 
 Example:
 
-✔ `/Users/namanagarwalla/Documents/...`
+✔ `/Users/<your folder path>/Documents/...`
 
 ✘ `./backend/run_pipeline.sh`
 
@@ -91,7 +91,7 @@ Use:
 
 Look at pipeline logs:
 
-`cat /Users/namanagarwalla/Documents/Projects/aws-data-pipeline/backend/pipeline.log`
+`cat /Users/<your folder path>/Documents/Projects/aws-data-pipeline/backend/pipeline.log`
 
 ### 7.2 Add Debug Output Inside Script
 
@@ -113,3 +113,4 @@ Open editor:
 
 `crontab -e`
 Delete the specific line, save, and exit.
+
