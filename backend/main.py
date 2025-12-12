@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import requests
 import boto3
 import json
@@ -6,61 +7,75 @@ from datetime import datetime
 
 app = FastAPI()
 
-# Initialize S3 client
+# CORS setup
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# S3 client
 s3 = boto3.client("s3")
+BUCKET_NAME = "crypto-price-data-naman"
 
-BUCKET_NAME = "your bucket name"   # <-- update this
+# Coin mapping
+COINGECKO_MAP = {
+    "BTC": "bitcoin",
+    "ETH": "ethereum",
+    "SOL": "solana",
+    "DOGE": "dogecoin"
+}
 
-@app.get("/crypto-price")
-def get_crypto_price():
-    # Fetch Bitcoin price
-    url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"
-    response = requests.get(url)
-    data = response.json()
+# Simple in-memory cache
+CACHE = {}
+CACHE_TIMESTAMP = None
+CACHE_TTL = 10  # seconds
 
-    price = data["bitcoin"]["usd"]
-    timestamp = datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
 
-    # File name to store in S3
-    file_name = f"crypto/bitcoin_{timestamp}.json"
+@app.get("/crypto-prices")
+def get_crypto_prices():
+    global CACHE, CACHE_TIMESTAMP
+    now = datetime.utcnow()
 
-    # Data to save
-    json_data = json.dumps({
-        "btc_price": price,
-        "timestamp": timestamp
-    })
+    # Use cache if within TTL
+    if CACHE and CACHE_TIMESTAMP and (now - CACHE_TIMESTAMP).seconds < CACHE_TTL:
+        return CACHE
 
-    # Upload to S3
-    s3.put_object(
-        Bucket=BUCKET_NAME,
-        Key=file_name,
-        Body=json_data,
-        ContentType="application/json"
-    )
+    ids = ",".join(COINGECKO_MAP.values())
+    url = f"https://api.coingecko.com/api/v3/simple/price?ids={ids}&vs_currencies=usd"
 
-    return {"price": price, "message": "Saved to S3!"}
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+    except Exception as e:
+        # Return cached data if available on error
+        if CACHE:
+            return CACHE
+        else:
+            return {symbol: "N/A" for symbol in COINGECKO_MAP.keys()}
 
-import boto3
-from datetime import datetime
+    result = {}
+    timestamp = now.strftime("%Y-%m-%d_%H-%M-%S")
+    for symbol, cg_id in COINGECKO_MAP.items():
+        price = data.get(cg_id, {}).get("usd")
+        result[symbol] = price if price is not None else "N/A"
 
-s3 = boto3.client("s3")
-BUCKET_NAME = "your bucket name"
+        # Save to S3
+        file_name = f"crypto/{symbol}_{timestamp}.json"
+        json_data = json.dumps({"symbol": symbol, "price": price, "timestamp": timestamp})
+        try:
+            s3.put_object(
+                Bucket=BUCKET_NAME,
+                Key=file_name,
+                Body=json_data,
+                ContentType="application/json"
+            )
+        except Exception as e:
+            pass  # ignore S3 errors for now
 
-@app.get("/store-price")
-def store_price():
-    response = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd")
-    price_data = response.json()
-    price = price_data["bitcoin"]["usd"]
-
-    # Create a filename with timestamp
-    timestamp = datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
-    filename = f"bitcoin_price_{timestamp}.txt"
-
-    # Write price locally
-    with open(filename, "w") as f:
-        f.write(f"Bitcoin Price: ${price}")
-
-    # Upload to S3
-    s3.upload_file(filename, BUCKET_NAME, filename)
-
-    return {"message": "Price stored in S3", "filename": filename}
+    CACHE = result
+    CACHE_TIMESTAMP = now
+    return result

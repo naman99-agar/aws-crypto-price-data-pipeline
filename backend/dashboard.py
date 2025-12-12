@@ -2,7 +2,7 @@ import boto3
 import pandas as pd
 import plotly.express as px
 
-BUCKET = "your bucket name"
+BUCKET = "crypto-price-data-naman"
 KEY = "processed/prices.csv"
 
 s3 = boto3.client("s3")
